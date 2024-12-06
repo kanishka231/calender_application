@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
-const JWT_SECRET = 'your_jwt_secret'; // Use a secure secret in production
+const JWT_SECRET = process.env.JWT_SECRET as string; // Use a secure secret in production
 
 export async function POST(request: Request) {
   const { email, password } = await request.json();

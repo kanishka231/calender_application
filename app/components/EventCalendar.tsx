@@ -1,18 +1,6 @@
-// Frontend (React)
-
-'use client';
-
-import { useState, useEffect } from 'react';
-import React from 'react';
-import axios from 'axios';
-
-// Define types for Event and NewEvent
-interface Event {
-  _id: string;
-  name: string;
-  datetime: string;
-  tag: string;
-}
+import React, { useState, useEffect } from 'react';
+import { useAppContext } from '@/app/context/AppContext';
+import { useRouter } from 'next/navigation';
 
 interface NewEvent {
   name: string;
@@ -21,63 +9,81 @@ interface NewEvent {
 }
 
 export default function EventCalendar() {
-  const [events, setEvents] = useState<Event[]>([]); // State for events
+  const { events, fetchEvents, logout } = useAppContext();
   const [newEvent, setNewEvent] = useState<NewEvent>({
     name: '',
     datetime: '',
-    tag: 'work', // Default tag set to 'work'
+    tag: 'work',
   });
-  const [successMessage, setSuccessMessage] = useState<string>(''); // Success message
+  const [successMessage, setSuccessMessage] = useState<string>('');
+  const router = useRouter();
 
-  // Fetch events from the API using axios
-  const fetchEvents = async () => {
-    try {
-      const res = await axios.get('./api/events'); // No need to send token
-      setEvents(res.data.events || []);
-    } catch (error) {
-      console.error('Failed to fetch events', error);
-      alert('Failed to fetch events');
-    }
+  // Handle Logout
+  const handleLogout = () => {
+    logout();
+    sessionStorage.removeItem('token'); // Clear token from sessionStorage
+    router.push('/login'); // Redirect to login page
   };
 
-  useEffect(() => {
-    fetchEvents(); // Fetch events on initial load
-  }, []);
-
-  // Handle event creation using axios
+  // Handle Event Creation
   const handleCreateEvent = async () => {
     try {
-      const res = await axios.post(
-        './api/events',
-        newEvent, 
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      console.log('Created event:', res.data);
-      if (res.data.event) {
-        // Refresh the event list from the server
-        fetchEvents();
-        setNewEvent({ name: '', datetime: '', tag: 'work' }); // Clear form
-        setSuccessMessage('Event created successfully!'); // Show success message
+      const res = await fetch('/api/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newEvent),
+      });
+  
+      if (res.status === 400) {
+        // Show alert if event time is occupied
+        alert('Event time is occupied. Please choose a different time.');
+        return;
+      }
+  
+      const data = await res.json();
+  
+      if (data.event) {
+        // Refresh event list after creation
+        await fetchEvents();
+        setNewEvent({ name: '', datetime: '', tag: 'work' }); // Clear the form
+        setSuccessMessage('Event created successfully!');
         setTimeout(() => setSuccessMessage(''), 3000); // Hide success message after 3 seconds
       }
     } catch (error) {
-      console.error('Error creating event', error);
+      console.error('Error creating event:', error);
       alert('Error creating event');
     }
   };
+  
+
+
 
   return (
     <div>
-      <h1>Event Calendar</h1>
+      <header>
+        <h1>Event Calendar</h1>
+        <button
+          onClick={handleLogout}
+          style={{
+            float: 'right',
+            backgroundColor: 'red',
+            color: 'white',
+            padding: '5px 10px',
+            border: 'none',
+            borderRadius: '5px',
+            cursor: 'pointer',
+          }}
+        >
+          Logout
+        </button>
+      </header>
 
       {/* Success Message */}
       {successMessage && <div className="alert success">{successMessage}</div>}
 
-      {/* Display events */}
+      {/* Display Events */}
       <div>
         {events.length > 0 ? (
           events.map((event) => (
@@ -92,7 +98,7 @@ export default function EventCalendar() {
         )}
       </div>
 
-      {/* Event creation form */}
+      {/* Event Creation Form */}
       <div>
         <input
           type="text"

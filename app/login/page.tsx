@@ -1,11 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
+  const router = useRouter()
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -16,8 +17,12 @@ export default function LoginPage() {
     });
 
     const data = await res.json();
+    console.log(res,"res")
+    console.log(data,"data after login")
+    console.log(data.token,"token")
     if (data.token) {
       alert('Login successful');
+      router.push('/')
       console.log('Token:', data.token); // Save the token for authentication
     } else {
       alert(data.error);

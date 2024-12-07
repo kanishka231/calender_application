@@ -28,8 +28,18 @@ export async function POST(request: Request) {
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
-    return NextResponse.json({ message: 'Login successful', token }, { status: 200 });
+    // Set the token as a cookie
+    const response = NextResponse.json({ message: 'Login successful', token }, { status: 200 });
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 3600, // 1 hour
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
+    console.error('Error during login:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

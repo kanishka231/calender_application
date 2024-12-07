@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/utils/auth';
+import EventCalendar from '@/app/components/EventCalendar';  // Import EventCalendar component
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -17,5 +18,11 @@ export default function DashboardPage() {
     checkAuth();
   }, [router]);
 
-  return <div>Welcome to your dashboard!</div>;
+  return (
+    <div>
+      <h1>Welcome to your dashboard!</h1>
+      {/* Render the EventCalendar component */}
+      <EventCalendar />
+    </div>
+  );
 }

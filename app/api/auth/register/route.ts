@@ -4,13 +4,10 @@ import dbConnect from '@/lib/dbConnect';
 import User from '@/models/User';
 
 export async function POST(request: Request) {
+  const { name,email, password } = await request.json();
 
-  const { email, password } = await request.json();
-  console.log(email,"email")
-  console.log(password,"password")
-
-  if (!email || !password) {
-    return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
+  if (!email || !password || !name) {
+    return NextResponse.json({ error: 'Email , name  and password  are required' }, { status: 400 });
   }
 
   try {
@@ -20,7 +17,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User already exists' }, { status: 400 });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await User.create({ email, password: hashedPassword });
+    const newUser = await User.create({ name ,email, password: hashedPassword });
 
     return NextResponse.json({ message: 'User registered successfully', userId: newUser._id }, { status: 201 });
   } catch (error) {

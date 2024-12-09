@@ -1,6 +1,5 @@
 "use client";
 
-// context/AppContext.tsx
 import React, { createContext, useState, useContext, useEffect, ReactNode } from "react";
 import axios from "axios";
 
@@ -14,23 +13,23 @@ interface User {
 interface Event {
   _id: string;
   name: string;
+  description: string;
   datetime: string;
   tag: string;
+  meetingLink: string;
 }
 
 interface AppContextType {
   user: User | null;
   events: Event[];
   fetchUserDetails: () => Promise<void>;
-  fetchEvents: () => Promise<void>;
+  fetchEvents: (userId?: string) => Promise<void>;
   logout: () => void;
 }
-
-// Create Context with default undefined value
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 interface AppProviderProps {
-  children: ReactNode; // Define children prop as ReactNode
+  children: ReactNode;
 }
 
 // Context Provider component
@@ -41,21 +40,29 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   // Fetch user details
   const fetchUserDetails = async () => {
     try {
-      const res = await axios.get("/api/user"); // Assuming you have an endpoint for user details
-      setUser(res.data.user);
+      const res = await axios.get("/api/user");
+      console.log(res,"res user")
+      if (res.data.user) {
+        setUser(res.data.user);
+        fetchEvents(res.data.user._id);
+      }
     } catch (error) {
-      console.error("Failed to fetch user details:", error);
     }
   };
 
   // Fetch events
-  const fetchEvents = async () => {
+  const fetchEvents = async (userId?: string) => {
     try {
-      const res = await axios.get("/api/events");
-      console.log(res,"res")
+      const id = userId || user?._id;
+      if (!id) {
+        console.warn("No user ID available to fetch events");
+        return;
+      }
+      const res = await axios.get(`/api/events?userId=${id}`);
+      console.log(res, "events response");
       setEvents(res.data.events || []);
     } catch (error) {
-      console.error("Failed to fetch events:", error);
+      setEvents([]);
     }
   };
 
@@ -63,16 +70,11 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const logout = () => {
     setUser(null);
     setEvents([]);
-    sessionStorage.removeItem("token"); // Clear session storage
-    // Optionally clear cookies if you use them
+    sessionStorage.removeItem("token");
   };
 
-  // Automatically fetch data if user is logged in
   useEffect(() => {
-   
     fetchUserDetails();
-    fetchEvents();
-   
   }, []);
 
   return (

@@ -3,10 +3,13 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { isAuthenticated } from '@/utils/auth';
-import EventCalendar from '@/app/components/EventCalendar';  // Import EventCalendar component
+import EventCalendar from '@/components/EventCalender';  // Import EventCalendar component
+import { useAppContext } from './context/AppContext';
 
 export default function DashboardPage() {
   const router = useRouter();
+  
+  const { events, fetchEvents, logout } = useAppContext();
 
   useEffect(() => {
     async function checkAuth() {
@@ -20,9 +23,10 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <h1>Welcome to your dashboard!</h1>
-      {/* Render the EventCalendar component */}
-      <EventCalendar />
+      <EventCalendar 
+      events = {events}
+      logout={logout} 
+      fetchEvents={fetchEvents}/>
     </div>
   );
 }

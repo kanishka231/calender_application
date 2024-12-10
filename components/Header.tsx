@@ -15,13 +15,10 @@ export const Header: React.FC<HeaderProps> = ({ currentDate, setCurrentDate }) =
 
   const formatDateRange = () => {
     if (isSameMonth(weekStart, weekEnd)) {
-      // Week is within the same month
       return format(weekStart, 'MMMM yyyy');
     } else if (isSameYear(weekStart, weekEnd)) {
-      // Week spans two months in the same year
       return `${format(weekStart, 'MMMM')} - ${format(weekEnd, 'MMMM yyyy')}`;
     } else {
-      // Week spans two years
       return `${format(weekStart, 'MMMM yyyy')} - ${format(weekEnd, 'MMMM yyyy')}`;
     }
   };

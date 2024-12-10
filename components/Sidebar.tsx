@@ -2,7 +2,7 @@ import React from 'react';
 import { addMonths, subMonths } from 'date-fns';
 import { Calendar } from "@/components/ui/calendar"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+
 
 interface SidebarProps {
   currentDate: Date;
@@ -17,13 +17,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentDate, setCurrentDate, h
     setCalendarDate(currentDate);
   }, [currentDate]);
 
-  const handlePrevMonth = () => {
-    setCalendarDate(prevDate => subMonths(prevDate, 1));
-  };
 
-  const handleNextMonth = () => {
-    setCalendarDate(prevDate => addMonths(prevDate, 1));
-  };
+ 
 
   return (
     <div className="w-auto bg-white p-4 border-r lg:block hidden">

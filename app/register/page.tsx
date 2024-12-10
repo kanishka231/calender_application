@@ -23,7 +23,7 @@ export default function RegisterPage() {
       const data = await res.json();
       console.log(data,"data")
       if (res.status === 201) {
-        router.push('/')
+        router.push('/login')
         fetchEvents()
       } else {
         alert(data.error);

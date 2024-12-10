@@ -4,9 +4,8 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAppContext } from '@/app/context/AppContext';
-
 export default function LoginPage() {
-  const { fetchEvents } = useAppContext();
+  const {  user,fetchEvents } = useAppContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter()
@@ -21,6 +20,7 @@ export default function LoginPage() {
     });
 
     const data = await res.json();
+    console.log(data,"data")
  
     if (data.token) {
       router.push('/')

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { 
-  format, 
   startOfWeek, 
   endOfWeek, 
   eachDayOfInterval, 
@@ -15,25 +14,27 @@ import { WeekView } from '@/components/WorkView';
 import { EventDialog } from '@/components/EventDialog';
 
 interface Event {
+  id?: string;
   name: string;
   description: string;
   startTime: Date;
-  endTime:Date;
+  duration: number;
   tag: string;
   meetingLink: string;
 }
 
-export default function EventCalendar({ fetchEvents, events, logout }: any) {
+export default function EventCalendar({ fetchEvents, events, logout,user,selectedUser,setSelectedUser,other,setOther }: any) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [newEvent, setNewEvent] = useState<Event>({
     name: '',
     description: '',
     startTime: new Date(),
-    endTime: new Date(),
+    duration: 30,
     tag: 'work',
     meetingLink: ''
   });
+  
   const [successMessage, setSuccessMessage] = useState<string>('');
   const router = useRouter();
 
@@ -65,26 +66,25 @@ export default function EventCalendar({ fetchEvents, events, logout }: any) {
       if (data.event) {
         await fetchEvents();
         setNewEvent({
-            name: '',
-            description: '',
-            startTime: new Date(),
-            endTime: new Date(),
-            tag: 'work',
-            meetingLink: ''
-          });
+          name: '',
+          description: '',
+          startTime: new Date(),
+          duration: 30,
+          tag: 'work',
+          meetingLink: ''
+        });
         setIsEventModalOpen(false);
         setSuccessMessage('Event created successfully!');
         setTimeout(() => setSuccessMessage(''), 3000);
       }
     } catch (error) {
-      console.error('Error creating event:', error);
       alert('Error creating event');
     }
   };
 
   const getWeekEvents = (day: Date) => {
-    return events.filter((event: any) => {
-      const eventDate = parseISO(event.datetime);
+    return events.filter((event: Event) => {
+      const eventDate = parseISO(event.startTime.toString());
       return isSameDay(eventDate, day);
     });
   };
@@ -97,10 +97,10 @@ export default function EventCalendar({ fetchEvents, events, logout }: any) {
     }
   };
 
-  const handleTimeSlotClick = (date: Date) => {
+  const handleTimeSlotClick = (date: Date, startTime: Date) => {
     setNewEvent(prev => ({
       ...prev,
-      datetime: date.toISOString()
+      startTime: startTime,
     }));
     setIsEventModalOpen(true);
   };
@@ -112,13 +112,17 @@ export default function EventCalendar({ fetchEvents, events, logout }: any) {
           currentDate={currentDate}
           setCurrentDate={setCurrentDate}
           handleLogout={handleLogout}
+          selectedUser={selectedUser}
+          setSelectedUser={setSelectedUser}
+          other={other}
+          setOther={setOther}
+         
         />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
             <Header
               currentDate={currentDate}
               setCurrentDate={setCurrentDate}
-             
             /> 
             <WeekView
               weekDays={weekDays}
@@ -128,16 +132,15 @@ export default function EventCalendar({ fetchEvents, events, logout }: any) {
               onTimeSlotClick={handleTimeSlotClick}
             />
          
-         <EventDialog
-          newEvent={newEvent}
-          setNewEvent={setNewEvent}
-          handleCreateEvent={handleCreateEvent}
-        />
+            <EventDialog
+              newEvent={newEvent}
+              setNewEvent={setNewEvent}
+              handleCreateEvent={handleCreateEvent}
+            />
           </Dialog>
         </div>
       </div>
 
-      {/* Success Message */}
       {successMessage && (
         <div className="fixed bottom-4 right-4 bg-green-500 text-white p-2 rounded shadow">
           {successMessage}
@@ -146,4 +149,3 @@ export default function EventCalendar({ fetchEvents, events, logout }: any) {
     </div>
   );
 }
-

@@ -23,7 +23,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <EventCalendar 
+    <EventCalendar 
       events = {events}
       logout={logout} 
       fetchEvents={fetchEvents}/>

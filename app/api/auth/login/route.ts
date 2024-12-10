@@ -8,7 +8,6 @@ const JWT_SECRET = process.env.JWT_SECRET as string; // Use a secure secret in p
 
 export async function POST(request: Request) {
   const { email, password } = await request.json();
-
   if (!email || !password) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
   }
@@ -25,8 +24,9 @@ export async function POST(request: Request) {
     if (!isPasswordValid) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
+    console.log( user._id,"userid")
+    const token = jwt.sign({ userId: user._id.toString() }, JWT_SECRET, { expiresIn: '1h' });
 
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1h' });
 
     // Set the token as a cookie
     const response = NextResponse.json({ message: 'Login successful', token }, { status: 200 });

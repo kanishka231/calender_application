@@ -14,13 +14,14 @@ const eventSchema = new Schema({
     type: Date,
     required: true,
   },
-  endTime: {
-    type: Date,
-    required: true,
-  },
   duration: {
     type: Number, // Duration in minutes
-    required: false,
+    required: true,
+    min: [1, 'Duration must be at least 1 minute'],
+  },
+  endTime: {
+    type: Date,
+    required: false, // Will be computed automatically
   },
   tag: {
     type: String,
@@ -29,41 +30,36 @@ const eventSchema = new Schema({
   },
   description: {
     type: String,
-    required: true
+    required: true,
   },
   meetingLink: {
     type: String,
-    required: false
+    required: false,
   },
   recurrence: {
     type: String,
     enum: ['none', 'daily', 'weekly', 'monthly', 'yearly'],
-    default: 'none'
+    default: 'none',
   },
   location: {
     type: String,
-    required: false
+    required: false,
   },
   isAllDay: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 }, {
-  timestamps: true // This adds createdAt and updatedAt fields
+  timestamps: true, // Adds createdAt and updatedAt fields
 });
 
 // Add an index to improve query performance
-eventSchema.index({ userId: 1, startTime: 1, endTime: 1 });
+eventSchema.index({ userId: 1, startTime: 1 });
 
-// Validation to ensure end time is after start time
+// Middleware to calculate endTime based on startTime and duration
 eventSchema.pre('validate', function(next) {
-  if (this.startTime && this.endTime && this.startTime > this.endTime) {
-    next(new Error('End time must be after start time'));
-  }
-  
-  // Calculate duration if not provided
-  if (this.startTime && this.endTime && !this.duration) {
-    this.duration = Math.round((this.endTime.getTime() - this.startTime.getTime()) / 60000);
+  if (this.startTime && this.duration) {
+    this.endTime = new Date(this.startTime.getTime() + this.duration * 60000);
   }
   
   next();

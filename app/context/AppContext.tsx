@@ -24,7 +24,14 @@ interface AppContextType {
   events: Event[];
   fetchUserDetails: () => Promise<void>;
   fetchEvents: (userId?: string) => Promise<void>;
+  selectedUser: User | null;
+  setSelectedUser: (user: User) => void;
+  other: boolean;
+  setOther: (state: boolean) => void;
   logout: () => void;
+  fetchUsers: (query: string) => Promise<void>;
+  searchResults: User[];
+  isSearching: boolean;
 }
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -36,32 +43,53 @@ interface AppProviderProps {
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
-
+  const [selectedUser , setSelectedUser ] = useState<User | null>(null);
+  const [other,setOther]=useState<boolean>(false) 
+  const [searchResults, setSearchResults] = useState<User[]>([]);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
   // Fetch user details
   const fetchUserDetails = async () => {
     try {
       const res = await axios.get("/api/user");
       console.log(res,"res user")
       if (res.data.user) {
+       // console.log(res,"res")
         setUser(res.data.user);
-        fetchEvents(res.data.user._id);
+        fetchEvents();
       }
     } catch (error) {
     }
   };
-
-  // Fetch events
-  const fetchEvents = async (userId?: string) => {
+  const fetchUsers = async (query: string) => {
     try {
-      const id = userId || user?._id;
-      if (!id) {
-        console.warn("No user ID available to fetch events");
-        return;
+      setIsSearching(true);
+      const response = await axios.get(`/api/user?q=${encodeURIComponent(query)}`);
+      const data = response.data;
+  
+      if (response.status === 200) {
+        setSearchResults(data.users || []);
+      } else {
+        setSearchResults([]);
       }
-      const res = await axios.get(`/api/events?userId=${id}`);
-      console.log(res, "events response");
-      setEvents(res.data.events || []);
     } catch (error) {
+      console.error("Error fetching users:", error);
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  // Fetch events
+  const fetchEvents = async () => {
+    try {
+      const res = await axios.get("/api/events"); // Replace with your actual API route
+      if (res.status === 200) {
+        setEvents(res.data.events || []);
+      } else {
+        console.warn("Failed to fetch events:", res.data.error);
+        setEvents([]);
+      }
+    } catch (error) {
+      console.error("Error fetching events:", error);
       setEvents([]);
     }
   };
@@ -75,6 +103,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
 
   useEffect(() => {
     fetchUserDetails();
+    fetchEvents()
   }, []);
 
   return (
@@ -85,6 +114,13 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
         fetchUserDetails,
         fetchEvents,
         logout,
+        selectedUser,
+        setSelectedUser,
+        other,
+        setOther,
+        fetchUsers,
+        searchResults,
+        isSearching,
       }}
     >
       {children}

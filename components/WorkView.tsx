@@ -1,145 +1,161 @@
-import React, { useMemo } from 'react';
-import { format, isSameDay, parseISO, startOfDay, setHours, setMinutes, addMinutes } from 'date-fns';
+import React, { useState } from 'react';
+import { format, isSameDay } from 'date-fns';
+import { EventDetailsDialog } from '@/components/EventDetailDialog';
 
 interface WeekViewProps {
   weekDays: Date[];
   events: any[];
   getWeekEvents: (day: Date) => any[];
   getEventColor: (tag: string) => string;
-  onTimeSlotClick: (date: Date) => void;
+  onTimeSlotClick: (date: Date, time: Date) => void;
 }
 
 export const WeekView: React.FC<WeekViewProps> = ({ 
   weekDays, 
   events, 
   getWeekEvents, 
-  getEventColor,
-  onTimeSlotClick
+  getEventColor, 
+  onTimeSlotClick 
 }) => {
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  // Create an array of time slots (24 hours)
+  const timeSlots = Array.from({ length: 24 }, (_, i) => {
+    return new Date(0, 0, 0, i, 0);
+  });
+  
+  const [selectedEvent, setSelectedEvent] = useState<any | null>(null);
 
-  // Create hour labels with AM/PM
-  const hourLabels = useMemo(() => 
-    hours.map(hour => {
-      return format(setHours(new Date(), hour), 'h a');
-    }), 
-    []
-  );
-
-  // Determine if a day is today
-  const isToday = (day: Date) => {
-    return isSameDay(day, new Date());
+  // Helper function to generate unique keys
+  const generateUniqueKey = (day: Date, timeSlot: Date, index: number) => {
+    return `week-view-${day.getFullYear()}-${day.getMonth()}-${day.getDate()}-${timeSlot.getHours()}-${index}`;
   };
 
-  const handleTimeSlotClick = (day: Date, hour: number, minute: number) => {
-    const clickedDate = setMinutes(setHours(day, hour), minute);
-    onTimeSlotClick(clickedDate);
+  // Check if a given date is today
+  const isToday = (date: Date) => {
+    return isSameDay(date, new Date());
+  };
+
+  // Handle event click
+  const handleEventClick = (event: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedEvent(event);
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
-      {/* Header with days */}
-      <div className="flex border-b sticky top-0 bg-white z-10">
-        <div className="w-16 border-r"></div> {/* Spacer for time column */}
-        {weekDays.map((day) => (
+    <div className="flex flex-col w-full h-full bg-grey-100 ">
+      {/* Header with dates */}
+      <div className="flex border sticky top-0 bg-white z-10">
+        <div className="w-16  " /> {/* Time gutter spacer */}
+        {weekDays.map((day, dayIndex) => (
           <div 
-            key={day.toString()} 
-            className={`flex-1 text-center p-2 ${isToday(day) ? 'bg-blue-100' : ''}`}
+            key={`header-day-${day.toISOString()}-${dayIndex}`}
+            className={`flex-1 text-center py-2 px-1  ${
+              isToday(day) ? 'text-blue-600' : 'text-gray-900'
+            }`}
           >
-            <div className={`text-sm font-medium ${isToday(day) ? 'text-blue-600' : 'text-gray-600'}`}>
+            <div className="text-sm font-medium">
               {format(day, 'EEE')}
             </div>
-            <div 
-              className={`text-2xl font-bold ${
-                isToday(day) ? 'text-blue-600 bg-blue-100' : 'text-gray-800'
-              } rounded-full w-10 h-10 flex items-center justify-center mx-auto`}
-            >
+            <div className={`
+              text-2xl font-bold w-10 h-10 flex items-center justify-center mx-auto rounded-full
+              ${isToday(day) ? 'bg-blue-600 text-white' : ''}
+            `}>
               {format(day, 'd')}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Main grid */}
-      <div className="flex h-full overflow-y-auto border-b">
-        {/* Time column */}
-        <div className="w-16 h-full bg-white z-10">
-          {hourLabels.map((label, index) => (
+      {/* Time grid */}
+      <div className="flex flex-1 overflow-y-auto mb-20">
+        {/* Time labels */}
+        <div className="w-16 flex-shrink-0  ">
+          {timeSlots.map((timeSlot, timeSlotIndex) => (
             <div 
-              key={label} 
-              className="h-12 border-b border-r flex items-start justify-center text-xs text-gray-500 pt-1"
+              key={`time-label-${timeSlot.getHours()}-${timeSlotIndex}`}
+              className="h-20 border-b border-r text-right pr-2"
             >
-              {label}
+              <span className="text-xs text-gray-500">
+                {format(timeSlot, 'h a')}
+              </span>
             </div>
           ))}
         </div>
 
-        {/* Days grid */}
-        <div className="flex-1 relative" style={{ minWidth: `calc(100% - 4rem)` }}>
-          <div className="absolute top-0 left-0 right-0 grid grid-cols-7" style={{ minHeight: '100%' }}>
-            {weekDays.map((day) => (
-              <div 
-                key={day.toString()} 
-                className="border-r last:border-r-0"
-              >
-                {hours.map((hour) => (
+        {/* Calendar grid */}
+        <div className="flex-1 grid grid-cols-7">
+          {weekDays.map((day, dayIndex) => (
+            <div 
+              key={`day-column-${day.toISOString()}-${dayIndex}`}
+              className="border-r last:border-r-0"
+            >
+              {timeSlots.map((timeSlot, timeSlotIndex) => {
+                // Generate a unique key for each time slot
+                const uniqueKey = generateUniqueKey(day, timeSlot, timeSlotIndex);
+
+                // Create a combined date and time
+                const combinedDateTime = new Date(
+                  day.getFullYear(),
+                  day.getMonth(),
+                  day.getDate(),
+                  timeSlot.getHours(),
+                  0
+                );
+
+                // Filter events for this specific time slot
+                const eventsAtTimeSlot = getWeekEvents(day).filter((event: any) => {
+                  const eventStart = new Date(event.startTime);
+                  return eventStart.getHours() === timeSlot.getHours();
+                });
+
+                return (
                   <div 
-                    key={hour} 
-                    className="h-12 border-b last:border-b-0 relative"
+                    key={uniqueKey}
+                    className={`
+                      h-20 border-b relative group
+                      ${eventsAtTimeSlot.length === 0 ? 'hover:bg-gray-50' : ''}
+                    `}
+                    onClick={() => onTimeSlotClick(day, combinedDateTime)}
                   >
-                    {Array.from({ length: 4 }).map((_, quarterIndex) => (
+                    {/* Half-hour marker */}
+                    <div className="absolute w-full h-px bg-gray-100 top-1/2" />
+                    
+                    {/* Events */}
+                    {eventsAtTimeSlot.map((event: any, eventIndex: number) => (
                       <div
-                        key={quarterIndex}
-                        className="absolute w-full cursor-pointer hover:bg-gray-100"
+                        key={`${uniqueKey}-event-${event.id || eventIndex}`}
+                        className={`
+                          absolute inset-x-0 mx-1 rounded-sm shadow-sm
+                          ${getEventColor(event.tag)} z-10 cursor-pointer
+                        `}
                         style={{
-                          height: '25%',
-                          top: `${quarterIndex * 25}%`
+                          top: '2px',
+                          minHeight: '24px'
                         }}
-                        onClick={() => handleTimeSlotClick(day, hour, quarterIndex * 15)}
-                      ></div>
+                        onClick={(e) => handleEventClick(event, e)}
+                      >
+                        <div className="px-2 py-1 text-xs truncate">
+                          <span className="font-medium">{format(new Date(event.startTime), 'h:mm a')}</span>
+                          <span className="ml-1">{event.name}</span>
+                        </div>
+                      </div>
                     ))}
-                    {/* Event rendering */}
-                    {getWeekEvents(day)
-                      .filter(event => {
-                        const eventStart = parseISO(event.datetime);
-                        return (
-                          isSameDay(eventStart, day) && 
-                          eventStart.getHours() === hour
-                        );
-                      })
-                      .map((event) => {
-                        const eventStart = parseISO(event.datetime);
-                        const eventEnd = addMinutes(eventStart, 60); // Assuming 1-hour events
-                        const topPercentage = (eventStart.getMinutes() / 60) * 100;
-                        const heightPercentage = ((eventEnd.getTime() - eventStart.getTime()) / (60 * 60 * 1000)) * 100;
-                        
-                        return (
-                          <div
-                            key={event._id}
-                            className={`absolute left-0 right-1 rounded-sm ${getEventColor(event.tag)} text-white`}
-                            style={{
-                              top: `${topPercentage}%`,
-                              height: `${heightPercentage}%`,
-                              zIndex: 10,
-                              fontSize: '0.75rem',
-                              padding: '0.25rem',
-                              overflow: 'hidden'
-                            }}
-                          >
-                            <div className="font-semibold truncate">{event.name}</div>
-                            <div className="text-xs truncate">
-                              {format(eventStart, 'h:mm a')}
-                            </div>
-                          </div>
-                        );
-                      })}
+
+                    {/* Click target overlay */}
+                    <div className="absolute inset-0 cursor-pointer" />
                   </div>
-                ))}
-              </div>
-            ))}
-          </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
+
+      {/* Event Details Dialog */}
+      <EventDetailsDialog
+        event={selectedEvent}
+        isOpen={!!selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+      />
     </div>
   );
 };

@@ -105,6 +105,11 @@ Use the week switcher at the top of the calendar to navigate between weeks.
 - **Authentication:** JSON Web Tokens (JWT)
 - **Database:** MongoDB
 
+
+## Screenshots
+
+![Screenshot](\calender_application\public\event.png)
+![Screenshot](\calender_application\public\homepage.png)
 ## License
 This project is licensed under the MIT License.
 

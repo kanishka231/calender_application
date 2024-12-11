@@ -1,36 +1,110 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Calendar Application
+
+A calendar application built using Next.js, offering functionality similar to Google Calendar. This application allows users to create events, view a week-based calendar, switch between weeks, and manage user authentication with login and registration screens.
+
+## Features
+
+### Calendar View
+- **Time Axis:** Time slots displayed on the Y-axis.
+- **Day Axis:** Days with dates displayed on the X-axis.
+- **Week Switching:** Navigate between weeks using the week switcher.
+- **Event Creation:** Add events at the intersection of time and day by clicking or dragging on the calendar grid.
+
+### Sidebar
+- **Week View:** Overview of the selected week's events in a compact view.
+
+### Authentication
+- **Login Screen:** Allows users to log in with their credentials.
+- **Register Screen:** Enables users to create a new account.
+- **Token-Based Authentication:** User authentication is implemented by decoding JSON Web Tokens (JWT) without using NextAuth.
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js (>=14.x)
+- npm or yarn
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Installation
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd calendar-application
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+
+3. Set up environment variables:
+   Create a `.env.local` file in the root directory and configure the following variables:
+   ```env
+   DATABASE_URL=<Your MongoDB Connection String>
+   JWT_SECRET=<Your JWT Secret>
+   ```
+
+4. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. Open the application in your browser at `http://localhost:3000`.
+
+## Folder Structure
+```
+calendar-application/
+├── components/        # Reusable components
+├── pages/             # Next.js pages
+│   ├── index.js       # Home page
+│   ├── login.js       # Login screen
+│   ├── register.js    # Registration screen
+│   ├── api/           # API routes
+├── styles/            # CSS and styling files
+├── utils/             # Utility functions
+├── public/            # Static assets
+└── .env.local         # Environment variables
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Usage
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Creating an Event
+1. Navigate to the main calendar view.
+2. Click or drag on the desired time and day intersection.
+3. Fill out the event details in the popup form and save.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Switching Weeks
+Use the week switcher at the top of the calendar to navigate between weeks.
 
-## Learn More
+### Logging In/Out
+- Use the login screen to authenticate with your credentials.
+- Use the register screen to create a new account.
 
-To learn more about Next.js, take a look at the following resources:
+## Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Build the application:
+   ```bash
+   npm run build
+   # or
+   yarn build
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2. Start the production server:
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
 
-## Deploy on Vercel
+## Technologies Used
+- **Framework:** [Next.js](https://nextjs.org/)
+- **Styling:** CSS Modules/Styled Components
+- **Authentication:** JSON Web Tokens (JWT)
+- **Database:** MongoDB
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## License
+This project is licensed under the MIT License.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

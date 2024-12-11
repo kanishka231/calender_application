@@ -69,7 +69,8 @@ calendar-application/
 └── .env.local         # Environment variables
 ```
 
-## Usage
+## live link
+https://calender-application-taupe.vercel.app/
 
 ### Creating an Event
 1. Navigate to the main calendar view.

@@ -108,8 +108,8 @@ Use the week switcher at the top of the calendar to navigate between weeks.
 
 ## Screenshots
 
-![Screenshot](\public\event.png)
-![Screenshot](\public\homepage.png)
+![Screenshot](/public/event.png)
+![Screenshot](/public/homepage.png)
 ## License
 This project is licensed under the MIT License.
 
